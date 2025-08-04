@@ -4,6 +4,17 @@ This repository contains my personal [n8n](https://n8n.io) workflows created to 
 
 ---
 
+
+---
+
+## 🛠️ How to Use
+
+1. Clone this repo:
+   ```bash
+   git clone https://github.com/your-user/N8N_Workflows.git
+   cd N8N_Workflows
+
+
 ## 📁 Workflows Overview
 
 | Workflow Name                          | Description                                    | Status   |
@@ -34,7 +45,33 @@ This workflow reads structured task data from a Google Sheet and syncs it into a
 - Google Tasks API
 - JavaScript (inside Code node)
 
-**▶️ Trigger:**
-Manual Trigger (can be upgraded to cron or webhook)
+**📎 Sheet Reference Example:**
+| Title       | Due Date  | Completion Date | Status     | Notes      | Deleted | ID        | Parent | Previous |
+|-------------|-----------|------------------|------------|------------|---------|-----------|--------|----------|
+| Example Task | 2025-08-01 |                  | needsAction | Example note | FALSE   | task12345 |        |          |
+
+---
 
 **📂 Node Flow:**
+
+
+1. 🟢 Manual Trigger
+   └─ Starts the workflow manually when testing or debugging.
+
+2. 📗 Read Sheet (Google Sheets Node)
+   └─ Reads rows from a specific sheet in Google Sheets.
+   └─ Each row represents a task with fields like Title, Due Date, Notes, etc.
+
+3. 🟠 Code Node
+   └─ Transforms the data:
+       - Converts text dates to ISO format.
+       - Trims strings.
+       - Handles optional fields like status, deleted, parent, and previous.
+       - Prepares the correct structure for the Google Tasks API.
+
+4. 🔵 Google Tasks Node
+   └─ Creates a new task in your Google Task List based on the transformed data.
+
+
+
+
