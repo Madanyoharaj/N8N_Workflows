@@ -1,0 +1,136 @@
+{
+  "name": "Sheet To Task Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1rU6Z27tZMff_lRkgJa-rV8BqFQMqjesyR-muoFeHfgE",
+          "mode": "list",
+          "cachedResultName": "exta_sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rU6Z27tZMff_lRkgJa-rV8BqFQMqjesyR-muoFeHfgE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "task_list",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rU6Z27tZMff_lRkgJa-rV8BqFQMqjesyR-muoFeHfgE/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "938b1480-4038-428d-9392-f555815ee70c",
+      "name": "Read Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        60,
+        60
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "j65ZClW6IpN30cI3",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -220,
+        -120
+      ],
+      "id": "c60c3b3a-23d6-4cd9-9a8f-4f5c08c0749e",
+      "name": "When clicking ‘Test workflow’"
+    },
+    {
+      "parameters": {
+        "task": "VmRfdGhWLUtjeFNaWlh5WQ",
+        "title": "={{$json.title }}",
+        "additionalFields": {
+          "deleted": "={{ $json.additionalFields.deleted }}",
+          "dueDate": "={{ $json.additionalFields.dueDate }}",
+          "notes": "={{ $json.additionalFields.notes }}",
+          "status": "={{ $json.additionalFields.status }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleTasks",
+      "typeVersion": 1,
+      "position": [
+        500,
+        60
+      ],
+      "id": "bfd3522c-f550-409b-baf6-22a44a1a62b6",
+      "name": "Google Tasks",
+      "credentials": {
+        "googleTasksOAuth2Api": {
+          "id": "ccOdwzk8vZE65e7q",
+          "name": "Google Tasks account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all();\n\nreturn rows.map(item => {\n  const row = item.json;\n\n  const title = row[\"Title\"];\n  const dueRaw = row[\"Due Date\"];\n  const completedRaw = row[\"Completion Date\"];\n  const status = row[\"Status\"]?.trim() || \"needsAction\";\n  const deletedRaw = row[\"Deleted\"];\n\n  // Parse dueDate safely\n  let dueDate;\n  try {\n    const d = new Date(dueRaw);\n    if (!isNaN(d.getTime())) {\n      dueDate = d.toISOString();\n    }\n  } catch {}\n\n  // Parse completed date only if status is 'completed'\n  let completed;\n  try {\n    if (status === 'completed') {\n      const c = new Date(completedRaw);\n      if (!isNaN(c.getTime())) {\n        completed = c.toISOString();\n      }\n    }\n  } catch {}\n\n  // Boolean check for deleted\n  const deleted = deletedRaw === true || deletedRaw === 'true' || deletedRaw === 'TRUE';\n\n  const additionalFields = {\n    notes: row[\"Notes\"] || undefined,\n    dueDate: dueDate || undefined,\n    status,\n    deleted,\n  };\n\n  if (completed) additionalFields.completed = completed;\n  if (row[\"Parent\"]?.trim()) additionalFields.parent = row[\"Parent\"].trim();\n  if (row[\"Previous\"]?.trim()) additionalFields.previous = row[\"Previous\"].trim();\n\n  return {\n    json: {\n      task: row[\"ID\"], // ✅ Your Task List ID\n      title: title?.trim() || 'Untitled Task',\n      additionalFields,\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        300,
+        -160
+      ],
+      "id": "27aa48e5-640e-4eb0-a0f6-b16c8eff6a0a",
+      "name": "Code"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Read Sheet": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Read Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Google Tasks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7a618dd5-149b-4f86-9165-4bb88d2596be",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fec5ca61a4c9c28fdd684a65c8451bcac514b4a39694e8b39a8f63d5975e6a25"
+  },
+  "id": "OQGRlYoDPmSyC7Fp",
+  "tags": []
+}
